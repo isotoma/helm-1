@@ -9,6 +9,13 @@ metadata:
     alb.ingress.kubernetes.io/healthcheck-path: /ping
     alb.ingress.kubernetes.io/success-codes: '200'
     alb.ingress.kubernetes.io/scheme: internal
+    {{- if .Values.global.alb.logging.enabled }}
+    alb.ingress.kubernetes.io/load-balancer-attributes: {{ if .Values.global.alb.deletionProtection }}deletion_protection.enabled=true,{{ end }}access_logs.s3.enabled=true,access_logs.s3.bucket={{ .Values.global.alb.logging.bucket }},access_logs.s3.prefix={{ .Values.global.alb.logging.prefix}}/internal
+    {{- else }}
+    {{- if .Values.global.alb.deletionProtection }}
+    alb.ingress.kubernetes.io/load-balancer-attributes: deletion_protection.enabled=true
+    {{- end }} 
+    {{- end }}
     external-dns.alpha.kubernetes.io/hostname: {{ .Values.global.subdomain }}.{{ .Values.global.domain }}
   labels:
     environment: {{ .Values.global.environment }}

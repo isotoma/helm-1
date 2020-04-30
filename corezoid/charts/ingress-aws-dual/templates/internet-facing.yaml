@@ -13,7 +13,14 @@ metadata:
     {{- if .Values.global.alb.oidc.enabled }}
     alb.ingress.kubernetes.io/auth-type: oidc
     alb.ingress.kubernetes.io/auth-idp-oidc: '{"Issuer": "{{ .Values.global.alb.oidc.issuer }}","AuthorizationEndpoint": "{{ .Values.global.alb.oidc.endpoints.authorize }}","TokenEndpoint": "{{ .Values.global.alb.oidc.endpoints.token }}","UserInfoEndpoint": "{{ .Values.global.alb.oidc.endpoints.userinfo }}","SecretName": "{{ .Values.appName }}-{{ .Values.global.environment }}-alb-oidc"}'
-    {{ end }}
+    {{- end }}
+    {{- if .Values.global.alb.logging.enabled }}
+    alb.ingress.kubernetes.io/load-balancer-attributes: {{ if .Values.global.alb.deletionProtection }}deletion_protection.enabled=true,{{ end }}access_logs.s3.enabled=true,access_logs.s3.bucket={{ .Values.global.alb.logging.bucket }},access_logs.s3.prefix={{ .Values.global.alb.logging.prefix}}/internet-facing
+    {{- else }}
+    {{- if .Values.global.alb.deletionProtection }}
+    alb.ingress.kubernetes.io/load-balancer-attributes: deletion_protection.enabled=true
+    {{- end }} 
+    {{- end }}
   labels:
     environment: {{ .Values.global.environment }}
     app: {{ .Values.global.product }}
